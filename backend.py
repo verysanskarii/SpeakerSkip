@@ -83,7 +83,7 @@ async def process_video(req: ProcessRequest):
             try:
                 config = aai.TranscriptionConfig(
                     speaker_labels=True,
-                    speech_models=["nano"]
+                    speech_models=["universal-2"]
                 )
                 transcriber = aai.Transcriber()
 
