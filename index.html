@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SHUT YAP 🤫</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Permanent+Marker&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --orange: #FF4500; --yellow: #FFE000; --black: #0a0a0a;
+      --white: #F5F0E8; --red: #D0021B; --green: #00C853;
+      --mono: 'DM Mono', monospace; --display: 'Bebas Neue', sans-serif;
+      --marker: 'Permanent Marker', cursive;
+    }
+    body { background: var(--white); color: var(--black); font-family: var(--mono); min-height: 100vh; overflow-x: hidden; }
+    header { background: var(--black); padding: 0 40px; display: flex; align-items: center; justify-content: space-between; border-bottom: 5px solid var(--orange); position: relative; overflow: hidden; }
+    header::after { content: 'SHUT YAP SHUT YAP SHUT YAP SHUT YAP SHUT YAP SHUT YAP SHUT YAP SHUT YAP'; position: absolute; bottom: 0; left: 0; font-family: var(--display); font-size: 10px; letter-spacing: 4px; color: var(--orange); opacity: 0.12; white-space: nowrap; }
+    .logo-wrap { display: flex; align-items: baseline; gap: 12px; padding: 20px 0; }
+    .logo { font-family: var(--display); font-size: 52px; color: var(--white); letter-spacing: 2px; line-height: 1; }
+    .logo .yap { color: var(--orange); }
+    .tagline { font-family: var(--marker); font-size: 13px; color: var(--yellow); transform: rotate(-2deg); }
+    .warning-badge { background: var(--orange); color: var(--black); font-family: var(--display); font-size: 13px; letter-spacing: 2px; padding: 6px 14px; border-radius: 2px; transform: rotate(1deg); animation: badgePulse 3s ease-in-out infinite; }
+    @keyframes badgePulse { 0%,100%{transform:rotate(1deg) scale(1)} 50%{transform:rotate(1deg) scale(1.04)} }
+    main { display: grid; grid-template-columns: 400px 1fr; min-height: calc(100vh - 97px); }
+    .panel { background: var(--black); padding: 32px 28px; display: flex; flex-direction: column; gap: 24px; border-right: 5px solid var(--orange); position: relative; }
+    .panel::before { content: '🤫'; position: absolute; top: 16px; right: 16px; font-size: 40px; opacity: 0.06; }
+    .section-label { font-family: var(--display); font-size: 13px; letter-spacing: 3px; color: var(--orange); margin-bottom: 8px; }
+    input[type="text"], input[type="password"] { width: 100%; background: #1a1a1a; border: 2px solid #333; color: var(--white); font-family: var(--mono); font-size: 12px; padding: 13px 14px; border-radius: 4px; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+    input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,69,0,0.15); }
+    input::placeholder { color: #444; }
+    .btn { width: 100%; padding: 16px; background: var(--orange); color: var(--black); font-family: var(--display); font-size: 22px; letter-spacing: 3px; border: none; border-radius: 4px; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; box-shadow: 4px 4px 0 var(--red); }
+    .btn:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--red); }
+    .btn:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 var(--red); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .status { font-family: var(--mono); font-size: 11px; color: #555; min-height: 20px; line-height: 1.6; word-break: break-word; }
+    .status.active { color: var(--yellow); }
+    .status.error { color: var(--red); }
+    .status.done { color: var(--green); }
+    .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 6px; animation: pulse 1s infinite; vertical-align: middle; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
+    .speakers-section { display: none; }
+    .speakers-intro { font-family: var(--marker); font-size: 13px; color: var(--yellow); margin-bottom: 12px; display: inline-block; transform: rotate(-1deg); }
+    .speaker-card { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border: 2px solid #2a2a2a; border-radius: 6px; margin-bottom: 8px; cursor: pointer; background: #111; user-select: none; position: relative; overflow: hidden; transition: all 0.15s; }
+    .speaker-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--sp-color, #333); }
+    .speaker-card:hover { border-color: #444; transform: translateX(2px); }
+    .speaker-card.skipped { border-color: var(--red); background: rgba(208,2,27,0.08); }
+    .speaker-card.skipped::before { background: var(--red); }
+    .speaker-name { font-family: var(--display); font-size: 18px; letter-spacing: 1px; }
+    .speaker-meta { font-size: 10px; color: #555; margin-top: 2px; }
+    .skip-btn { font-family: var(--display); font-size: 12px; letter-spacing: 2px; padding: 5px 10px; border-radius: 3px; border: 2px solid #333; background: transparent; color: #555; cursor: pointer; transition: all 0.15s; }
+    .speaker-card.skipped .skip-btn { background: var(--red); border-color: var(--red); color: white; }
+    .skip-hint { font-size: 10px; color: #444; text-align: center; padding-top: 4px; font-style: italic; }
+
+    /* STEP CARDS */
+    .steps-wrap { display: flex; flex-direction: column; gap: 8px; }
+    .step-card { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border-radius: 6px; border: 2px solid #222; background: #111; transition: all 0.3s; }
+    .step-card.active { border-color: var(--yellow); background: rgba(255,224,0,0.05); }
+    .step-card.done { border-color: #1a3a1a; background: rgba(0,200,83,0.06); }
+    .step-card.error { border-color: var(--red); background: rgba(208,2,27,0.06); }
+    .step-icon { font-size: 18px; min-width: 24px; margin-top: 1px; }
+    .step-icon.spinning { animation: spin 1s linear infinite; display: inline-block; }
+    @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    .step-title { font-family: var(--display); font-size: 13px; letter-spacing: 2px; color: #444; transition: color 0.3s; }
+    .step-card.active .step-title { color: var(--yellow); }
+    .step-card.done .step-title { color: var(--green); }
+    .step-card.error .step-title { color: var(--red); }
+    .step-sub { font-size: 10px; color: #444; margin-top: 3px; line-height: 1.5; transition: color 0.3s; }
+    .step-card.active .step-sub { color: #888; }
+    .content { display: flex; flex-direction: column; background: var(--white); }
+    .player-area { padding: 24px 28px; border-bottom: 3px solid var(--black); display: none; background: var(--black); }
+    .player-wrap { position: relative; padding-bottom: 56.25%; border-radius: 6px; overflow: hidden; border: 3px solid var(--orange); }
+    #yt-player { position: absolute; top:0; left:0; width:100%; height:100%; }
+    .now-bar { margin-top: 14px; display: flex; align-items: center; gap: 10px; }
+    .now-label { font-family: var(--display); font-size: 13px; letter-spacing: 2px; color: #555; }
+    .speaker-pill { background: #1a1a1a; border: 2px solid #333; padding: 4px 12px; border-radius: 20px; font-family: var(--display); font-size: 14px; letter-spacing: 1px; color: var(--white); transition: all 0.2s; }
+    .speaker-pill.skipping { background: var(--red); border-color: var(--red); animation: skipFlash 0.5s ease-in-out infinite; }
+    @keyframes skipFlash { 0%,100%{opacity:1} 50%{opacity:0.6} }
+    .skip-indicator { font-family: var(--marker); font-size: 14px; color: var(--red); display: none; }
+    .divider { height: 3px; background: repeating-linear-gradient(90deg, var(--orange) 0px, var(--orange) 10px, var(--black) 10px, var(--black) 20px); flex-shrink: 0; display: none; }
+    .transcript-area { flex: 1; overflow-y: auto; padding: 28px; scrollbar-width: thin; scrollbar-color: #ccc transparent; }
+    .transcript-empty { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center; }
+    .empty-emoji { font-size: 64px; animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0) rotate(-5deg)} 50%{transform:translateY(-12px) rotate(5deg)} }
+    .empty-title { font-family: var(--display); font-size: 32px; letter-spacing: 2px; }
+    .empty-sub { font-size: 12px; color: #888; line-height: 1.8; max-width: 280px; }
+    .empty-sub strong { color: var(--orange); font-family: var(--marker); font-size: 14px; }
+    .utterance { display: flex; gap: 14px; padding: 12px 10px; border-bottom: 1px solid #eee; cursor: pointer; border-radius: 6px; transition: background 0.1s; }
+    .utterance:hover { background: #f5f0e0; }
+    .utterance.active-utt { background: #fff8e0; border-left: 3px solid var(--orange); padding-left: 7px; }
+    .utterance.skipped-utt { opacity: 0.25; text-decoration: line-through; text-decoration-color: var(--red); }
+    .utt-speaker { font-family: var(--display); font-size: 14px; letter-spacing: 1px; min-width: 80px; padding-top: 2px; flex-shrink: 0; }
+    .utt-time { font-size: 10px; color: #aaa; min-width: 38px; padding-top: 4px; flex-shrink: 0; }
+    .utt-text { font-size: 14px; line-height: 1.65; color: #333; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-wrap">
+    <div class="logo">SHUT <span class="yap">YAP</span></div>
+    <div class="tagline">finally, some peace 🤫</div>
+  </div>
+  <div class="warning-badge">SKIP THE YAPPER</div>
+</header>
+
+<main>
+  <div class="panel">
+    <div>
+      <div class="section-label">🔑 AssemblyAI Key</div>
+      <input type="password" id="api-key" placeholder="paste your key here..." />
+    </div>
+    <div>
+      <div class="section-label">📺 YouTube URL</div>
+      <input type="text" id="yt-url" placeholder="drop the link of the yapper..." />
+    </div>
+    <button class="btn" id="process-btn" onclick="processVideo()">SHUT 'EM UP</button>
+    <div class="status" id="status-msg"></div>
+    <div class="steps-wrap" id="steps-wrap" style="display:none">
+      <div class="step-card" id="step-1">
+        <div class="step-icon" id="icon-1">⏳</div>
+        <div class="step-body">
+          <div class="step-title">STEALING THE AUDIO</div>
+          <div class="step-sub" id="sub-1">breaking into youtube...</div>
+        </div>
+      </div>
+      <div class="step-card" id="step-2">
+        <div class="step-icon" id="icon-2">⏸️</div>
+        <div class="step-body">
+          <div class="step-title">PACKAGING THE YAP</div>
+          <div class="step-sub" id="sub-2">waiting...</div>
+        </div>
+      </div>
+      <div class="step-card" id="step-3">
+        <div class="step-icon" id="icon-3">⏸️</div>
+        <div class="step-body">
+          <div class="step-title">FORCING AI TO LISTEN</div>
+          <div class="step-sub" id="sub-3">waiting...</div>
+        </div>
+      </div>
+      <div class="step-card" id="step-4">
+        <div class="step-icon" id="icon-4">⏸️</div>
+        <div class="step-body">
+          <div class="step-title">PROFILING THE YAPPERS</div>
+          <div class="step-sub" id="sub-4">waiting...</div>
+        </div>
+      </div>
+    </div>
+    <div class="speakers-section" id="speakers-section">
+      <div class="section-label">🎙️ Who's Yappin'</div>
+      <div class="speakers-intro">tap to silence them 👇</div>
+      <div id="speaker-list"></div>
+      <div class="skip-hint">their words will cease to exist 💀</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="player-area" id="player-area">
+      <div class="player-wrap"><div id="yt-player"></div></div>
+      <div class="now-bar">
+        <span class="now-label">CURRENTLY YAPPIN:</span>
+        <span class="speaker-pill" id="now-speaker">—</span>
+        <span class="skip-indicator" id="skip-indicator">⏩ SKIPPING THIS YAP</span>
+      </div>
+    </div>
+    <div class="divider" id="divider"></div>
+    <div class="transcript-area" id="transcript-area">
+      <div class="transcript-empty" id="transcript-empty">
+        <div class="empty-emoji">🤫</div>
+        <div class="empty-title">TIRED OF YAPPERS?</div>
+        <p class="empty-sub">Paste a YouTube link, drop your AssemblyAI key, hit <strong>SHUT 'EM UP</strong> and we'll find every single speaker so you can skip the ones you can't stand.</p>
+      </div>
+      <div id="transcript-list"></div>
+    </div>
+  </div>
+</main>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+  let player=null, segments=[], skippedSpeakers=new Set(), skipInterval=null, videoId=null, speakerColors={}, lastActiveUtt=-1;
+  const COLORS=['#FF4500','#FFE000','#00C853','#00B0FF','#E040FB','#FF6D00'];
+
+  async function processVideo() {
+    const url=document.getElementById('yt-url').value.trim();
+    const key=document.getElementById('api-key').value.trim();
+    if(!url||!key){setStatus('bro fill in both fields first 💀','error');return;}
+
+    // reset & show step cards
+    document.getElementById('steps-wrap').style.display='flex';
+    document.getElementById('status-msg').textContent='';
+    [1,2,3,4].forEach(i=>{
+      document.getElementById(`step-${i}`).className='step-card';
+      document.getElementById(`icon-${i}`).textContent='⏸️';
+      document.getElementById(`icon-${i}`).className='step-icon';
+    });
+    document.getElementById('process-btn').disabled=true;
+    let currentStep=0;
+
+    try {
+      const res=await fetch('/process',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({youtube_url:url,api_key:key})});
+      if(!res.ok){const err=await res.json();throw new Error(err.detail||'Server error');}
+      const reader=res.body.getReader();
+      const decoder=new TextDecoder();
+      let buffer='';
+      while(true){
+        const{done,value}=await reader.read();
+        if(done)break;
+        buffer+=decoder.decode(value,{stream:true});
+        const lines=buffer.split('\n');
+        buffer=lines.pop();
+        for(const line of lines){
+          const trimmed=line.trim();
+          if(!trimmed.startsWith('data: '))continue;
+          const jsonStr=trimmed.slice(6);
+          if(!jsonStr)continue;
+          let data;
+          try{data=JSON.parse(jsonStr);}catch(e){continue;}
+
+          if(data.status==='error'){
+            if(currentStep>0){
+              document.getElementById(`step-${currentStep}`).className='step-card error';
+              document.getElementById(`icon-${currentStep}`).textContent='💀';
+              document.getElementById(`icon-${currentStep}`).className='step-icon';
+              document.getElementById(`sub-${currentStep}`).textContent=data.msg;
+            }
+            setStatus('💀 something went wrong. see above.','error');
+            document.getElementById('process-btn').disabled=false;
+            return;
+          }
+
+          if(data.status==='step'){
+            const s=data.step;
+            if(currentStep>0 && currentStep!==s){
+              document.getElementById(`step-${currentStep}`).className='step-card done';
+              document.getElementById(`icon-${currentStep}`).textContent='✅';
+              document.getElementById(`icon-${currentStep}`).className='step-icon';
+            }
+            document.getElementById(`step-${s}`).className='step-card active';
+            document.getElementById(`icon-${s}`).textContent='⚙️';
+            document.getElementById(`icon-${s}`).className='step-icon spinning';
+            document.getElementById(`sub-${s}`).textContent=data.msg;
+            currentStep=s;
+          }
+
+          if(data.status==='done'){
+            [1,2,3,4].forEach(i=>{
+              document.getElementById(`step-${i}`).className='step-card done';
+              document.getElementById(`icon-${i}`).textContent='✅';
+              document.getElementById(`icon-${i}`).className='step-icon';
+            });
+            videoId=data.video_id; segments=data.segments;
+            data.speakers.forEach((sp,i)=>{speakerColors[sp]=COLORS[i%COLORS.length];});
+            renderSpeakers(data.speakers); renderTranscript(segments); initPlayer(videoId);
+            setStatus(`🤫 ${data.speakers.length} yappers identified. pick your victims.`,'done');
+            document.getElementById('process-btn').disabled=false;
+          }
+        }
+      }
+    } catch(e){setStatus('💀 '+e.message,'error');document.getElementById('process-btn').disabled=false;}
+  }
+
+  function setStatus(msg,type){
+    const el=document.getElementById('status-msg');
+    el.className='status '+(type||'');
+    el.innerHTML=type==='active'?`<span class="dot"></span>${msg}`:msg;
+  }
+
+  function renderSpeakers(speakers){
+    document.getElementById('speakers-section').style.display='block';
+    const list=document.getElementById('speaker-list');
+    list.innerHTML='';
+    speakers.forEach(sp=>{
+      const segCount=segments.filter(s=>s.speaker===sp).length;
+      const duration=segments.filter(s=>s.speaker===sp).reduce((a,s)=>a+(s.end-s.start),0);
+      const card=document.createElement('div');
+      card.className='speaker-card'; card.id=`sp-card-${sp}`;
+      card.style.setProperty('--sp-color',speakerColors[sp]);
+      card.innerHTML=`<div><div class="speaker-name" style="color:${speakerColors[sp]}">SPEAKER ${sp}</div><div class="speaker-meta">${segCount} segments · ${fmt(duration)} of yapping</div></div><button class="skip-btn" id="badge-${sp}">KEEP</button>`;
+      card.onclick=()=>toggleSkip(sp);
+      list.appendChild(card);
+    });
+  }
+
+  function toggleSkip(sp){
+    if(skippedSpeakers.has(sp)){skippedSpeakers.delete(sp);document.getElementById(`sp-card-${sp}`).classList.remove('skipped');document.getElementById(`badge-${sp}`).textContent='KEEP';}
+    else{skippedSpeakers.add(sp);document.getElementById(`sp-card-${sp}`).classList.add('skipped');document.getElementById(`badge-${sp}`).textContent='MUTED 🤫';}
+    renderTranscript(segments);
+  }
+
+  function renderTranscript(segs){
+    document.getElementById('transcript-empty').style.display='none';
+    document.getElementById('divider').style.display='block';
+    const list=document.getElementById('transcript-list');
+    list.innerHTML='';
+    segs.forEach((seg,i)=>{
+      const div=document.createElement('div');
+      div.className='utterance'+(skippedSpeakers.has(seg.speaker)?' skipped-utt':'');
+      div.id=`utt-${i}`;
+      div.innerHTML=`<div class="utt-speaker" style="color:${speakerColors[seg.speaker]||'#888'}">${seg.speaker}</div><div class="utt-time">${fmt(seg.start)}</div><div class="utt-text">${seg.text}</div>`;
+      div.onclick=()=>{if(player)player.seekTo(seg.start,true);};
+      list.appendChild(div);
+    });
+  }
+
+  function initPlayer(vid){
+    document.getElementById('player-area').style.display='block';
+    if(player){player.loadVideoById(vid);return;}
+    player=new YT.Player('yt-player',{videoId:vid,playerVars:{autoplay:0,modestbranding:1,rel:0},events:{onReady:()=>startSkipEngine(),onStateChange:(e)=>{if(e.data===YT.PlayerState.PLAYING)startSkipEngine();else stopSkipEngine();}}});
+  }
+
+  function startSkipEngine(){stopSkipEngine();skipInterval=setInterval(tick,200);}
+  function stopSkipEngine(){if(skipInterval)clearInterval(skipInterval);}
+
+  function tick(){
+    if(!player||!player.getCurrentTime)return;
+    const t=player.getCurrentTime();
+    const idx=segments.findIndex(s=>t>=s.start&&t<s.end);
+    const nowEl=document.getElementById('now-speaker');
+    const skipInd=document.getElementById('skip-indicator');
+    if(idx!==-1){
+      const seg=segments[idx];
+      nowEl.textContent=`SPEAKER ${seg.speaker}`;
+      nowEl.style.borderColor=speakerColors[seg.speaker]||'';
+      if(skippedSpeakers.has(seg.speaker)){
+        let endTime=seg.end;
+        for(let j=idx+1;j<segments.length;j++){if(skippedSpeakers.has(segments[j].speaker))endTime=segments[j].end;else break;}
+        player.seekTo(endTime,true);
+        nowEl.classList.add('skipping'); skipInd.style.display='inline';
+      } else {nowEl.classList.remove('skipping'); skipInd.style.display='none';}
+      if(idx!==lastActiveUtt){
+        document.querySelectorAll('.utterance').forEach(el=>el.classList.remove('active-utt'));
+        const activeEl=document.getElementById(`utt-${idx}`);
+        if(activeEl){activeEl.classList.add('active-utt');activeEl.scrollIntoView({behavior:'smooth',block:'nearest'});}
+        lastActiveUtt=idx;
+      }
+    } else {nowEl.textContent='—';nowEl.classList.remove('skipping');skipInd.style.display='none';}
+  }
+
+  function fmt(secs){const m=Math.floor(secs/60),s=Math.floor(secs%60);return`${m}:${String(s).padStart(2,'0')}`;}
+  document.addEventListener('keydown',e=>{if(e.key==='Enter')processVideo();});
+</script>
+</body>
+</html>

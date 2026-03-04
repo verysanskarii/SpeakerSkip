@@ -2,7 +2,6 @@ import os
 import re
 import json
 import tempfile
-import subprocess
 import asyncio
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -44,12 +43,14 @@ async def process_video(req: ProcessRequest):
         with tempfile.TemporaryDirectory() as tmpdir:
             audio_path = os.path.join(tmpdir, "audio.%(ext)s")
 
-            yield f"data: {json.dumps({'status': 'downloading', 'msg': 'Downloading audio from YouTube...'})}\n\n"
+            yield f"data: {json.dumps({'status': 'step', 'step': 1, 'msg': 'breaking into youtube and stealing the audio 🕵️'})}\n\n"
 
             try:
                 proc = await asyncio.create_subprocess_exec(
                     "yt-dlp",
-                    "-f", "worstaudio",
+                    "-x",
+                    "--audio-format", "mp3",
+                    "--audio-quality", "5",
                     "--no-playlist",
                     "-o", audio_path,
                     req.youtube_url,
@@ -59,26 +60,27 @@ async def process_video(req: ProcessRequest):
 
                 async for line in proc.stdout:
                     text = line.decode().strip()
-                    if text:
-                        yield f"data: {json.dumps({'status': 'downloading', 'msg': text})}\n\n"
+                    if text and '[download]' in text:
+                        yield f"data: {json.dumps({'status': 'step', 'step': 1, 'msg': '↳ ' + text})}\n\n"
 
                 await proc.wait()
                 if proc.returncode != 0:
-                    yield f"data: {json.dumps({'status': 'error', 'msg': 'yt-dlp failed. Is it installed? Run: brew install yt-dlp'})}\n\n"
+                    yield f"data: {json.dumps({'status': 'error', 'msg': 'yt-dlp failed. make sure its installed: brew install yt-dlp'})}\n\n"
                     return
 
             except FileNotFoundError:
-                yield f"data: {json.dumps({'status': 'error', 'msg': 'yt-dlp not found. Run: brew install yt-dlp'})}\n\n"
+                yield f"data: {json.dumps({'status': 'error', 'msg': 'yt-dlp not found. run: brew install yt-dlp'})}\n\n"
                 return
 
             files = os.listdir(tmpdir)
             if not files:
-                yield f"data: {json.dumps({'status': 'error', 'msg': 'Download failed — no file found'})}\n\n"
+                yield f"data: {json.dumps({'status': 'error', 'msg': 'download failed — no file found'})}\n\n"
                 return
 
             actual_path = os.path.join(tmpdir, files[0])
             size_mb = os.path.getsize(actual_path) / 1024 / 1024
-            yield f"data: {json.dumps({'status': 'transcribing', 'msg': f'Audio downloaded ({size_mb:.1f} MB). Sending to AssemblyAI...'})}\n\n"
+
+            yield f"data: {json.dumps({'status': 'step', 'step': 2, 'msg': f'got {size_mb:.1f}mb of unfiltered yap. packaging it up 📦'})}\n\n"
 
             try:
                 config = aai.TranscriptionConfig(
@@ -87,7 +89,8 @@ async def process_video(req: ProcessRequest):
                 )
                 transcriber = aai.Transcriber()
 
-                yield f"data: {json.dumps({'status': 'transcribing', 'msg': 'Uploading to AssemblyAI...'})}\n\n"
+                yield f"data: {json.dumps({'status': 'step', 'step': 3, 'msg': 'AI is being forced to listen to every word. it did not consent 🤖'})}\n\n"
+
                 transcript = transcriber.transcribe(actual_path, config=config)
 
                 if transcript.status == aai.TranscriptStatus.error:
@@ -98,7 +101,7 @@ async def process_video(req: ProcessRequest):
                 yield f"data: {json.dumps({'status': 'error', 'msg': str(e)})}\n\n"
                 return
 
-            yield f"data: {json.dumps({'status': 'transcribing', 'msg': 'Processing speaker diarization...'})}\n\n"
+            yield f"data: {json.dumps({'status': 'step', 'step': 4, 'msg': 'building criminal profiles for each yapper 🔍'})}\n\n"
 
             segments = []
             for utt in transcript.utterances:
