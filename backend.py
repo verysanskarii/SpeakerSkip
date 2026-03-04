@@ -47,7 +47,7 @@ async def process_video(req: ProcessRequest):
 
             try:
                 proc = await asyncio.create_subprocess_exec(
-                    "yt-dlp",
+                    "python3", "-m", "yt_dlp",
                     "-x",
                     "--audio-format", "mp3",
                     "--audio-quality", "5",
@@ -69,7 +69,7 @@ async def process_video(req: ProcessRequest):
                     return
 
             except FileNotFoundError:
-                yield f"data: {json.dumps({'status': 'error', 'msg': 'yt-dlp not found. run: brew install yt-dlp'})}\n\n"
+                yield f"data: {json.dumps({'status': 'error', 'msg': 'python3 not found on server. contact support'})}\n\n"
                 return
 
             files = os.listdir(tmpdir)
