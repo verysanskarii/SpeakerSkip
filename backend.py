@@ -49,7 +49,7 @@ async def process_video(req: ProcessRequest):
             try:
                 proc = await asyncio.create_subprocess_exec(
                     "yt-dlp",
-                    "-f", "bestaudio",
+                    "-f", "worstaudio",
                     "--no-playlist",
                     "-o", audio_path,
                     req.youtube_url,
@@ -83,7 +83,7 @@ async def process_video(req: ProcessRequest):
             try:
                 config = aai.TranscriptionConfig(
                     speaker_labels=True,
-                    speech_models=["universal"]
+                    speech_models=["nano"]
                 )
                 transcriber = aai.Transcriber()
 
