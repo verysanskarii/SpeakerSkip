@@ -1,11 +1,13 @@
 import os
 import re
+import json
 import tempfile
 import subprocess
+import asyncio
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 import assemblyai as aai
 
@@ -38,66 +40,80 @@ async def process_video(req: ProcessRequest):
     if not video_id:
         raise HTTPException(status_code=400, detail="Invalid YouTube URL")
 
-    with tempfile.TemporaryDirectory() as tmpdir:
-        audio_path = os.path.join(tmpdir, "audio.%(ext)s")
+    async def stream():
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audio_path = os.path.join(tmpdir, "audio.%(ext)s")
 
-        try:
-            result = subprocess.run(
-                [
+            yield f"data: {json.dumps({'status': 'downloading', 'msg': 'Downloading audio from YouTube...'})}\n\n"
+
+            try:
+                proc = await asyncio.create_subprocess_exec(
                     "yt-dlp",
-                    "-x",
-                    "--audio-format", "mp3",
-                    "--audio-quality", "0",
+                    "-f", "bestaudio",
+                    "--no-playlist",
                     "-o", audio_path,
                     req.youtube_url,
-                ],
-                capture_output=True,
-                text=True,
-                timeout=180,
-            )
-            if result.returncode != 0:
-                raise HTTPException(status_code=500, detail=f"yt-dlp error: {result.stderr}")
-        except subprocess.TimeoutExpired:
-            raise HTTPException(status_code=500, detail="Download timed out")
-        except FileNotFoundError:
-            raise HTTPException(status_code=500, detail="yt-dlp not found. Run: brew install yt-dlp")
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.STDOUT,
+                )
 
-        files = os.listdir(tmpdir)
-        if not files:
-            raise HTTPException(status_code=500, detail="Audio download failed — no file found")
-        actual_path = os.path.join(tmpdir, files[0])
+                async for line in proc.stdout:
+                    text = line.decode().strip()
+                    if text:
+                        yield f"data: {json.dumps({'status': 'downloading', 'msg': text})}\n\n"
 
-        try:
-            config = aai.TranscriptionConfig(
-                speaker_labels=True,
-                speech_models=["universal"]
-            )
-            transcriber = aai.Transcriber()
-            transcript = transcriber.transcribe(actual_path, config=config)
+                await proc.wait()
+                if proc.returncode != 0:
+                    yield f"data: {json.dumps({'status': 'error', 'msg': 'yt-dlp failed. Is it installed? Run: brew install yt-dlp'})}\n\n"
+                    return
 
-            if transcript.status == aai.TranscriptStatus.error:
-                raise HTTPException(status_code=500, detail=f"Transcription error: {transcript.error}")
-        except HTTPException:
-            raise
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+            except FileNotFoundError:
+                yield f"data: {json.dumps({'status': 'error', 'msg': 'yt-dlp not found. Run: brew install yt-dlp'})}\n\n"
+                return
 
-        segments = []
-        for utt in transcript.utterances:
-            segments.append({
-                "speaker": utt.speaker,
-                "start": utt.start / 1000.0,
-                "end": utt.end / 1000.0,
-                "text": utt.text,
-            })
+            files = os.listdir(tmpdir)
+            if not files:
+                yield f"data: {json.dumps({'status': 'error', 'msg': 'Download failed — no file found'})}\n\n"
+                return
 
-        speakers = sorted(list(set(s["speaker"] for s in segments)))
+            actual_path = os.path.join(tmpdir, files[0])
+            size_mb = os.path.getsize(actual_path) / 1024 / 1024
+            yield f"data: {json.dumps({'status': 'transcribing', 'msg': f'Audio downloaded ({size_mb:.1f} MB). Sending to AssemblyAI...'})}\n\n"
 
-        return {
-            "video_id": video_id,
-            "segments": segments,
-            "speakers": speakers,
-        }
+            try:
+                config = aai.TranscriptionConfig(
+                    speaker_labels=True,
+                    speech_models=["universal"]
+                )
+                transcriber = aai.Transcriber()
+
+                yield f"data: {json.dumps({'status': 'transcribing', 'msg': 'Uploading to AssemblyAI...'})}\n\n"
+                transcript = transcriber.transcribe(actual_path, config=config)
+
+                if transcript.status == aai.TranscriptStatus.error:
+                    yield f"data: {json.dumps({'status': 'error', 'msg': transcript.error})}\n\n"
+                    return
+
+            except Exception as e:
+                yield f"data: {json.dumps({'status': 'error', 'msg': str(e)})}\n\n"
+                return
+
+            yield f"data: {json.dumps({'status': 'transcribing', 'msg': 'Processing speaker diarization...'})}\n\n"
+
+            segments = []
+            for utt in transcript.utterances:
+                segments.append({
+                    "speaker": utt.speaker,
+                    "start": utt.start / 1000.0,
+                    "end": utt.end / 1000.0,
+                    "text": utt.text,
+                })
+
+            speakers = sorted(list(set(s["speaker"] for s in segments)))
+
+            yield f"data: {json.dumps({'status': 'done', 'video_id': video_id, 'segments': segments, 'speakers': speakers})}\n\n"
+
+    return StreamingResponse(stream(), media_type="text/event-stream")
 
 
 def extract_video_id(url):
